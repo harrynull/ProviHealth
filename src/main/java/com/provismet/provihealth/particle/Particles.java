@@ -9,7 +9,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
 public class Particles {
-    public static final ParticleType<TextParticleEffect> TEXT_PARTICLE = FabricParticleTypes.complex(TextParticleEffect.PARAMETERS_FACTORY);
+    public static final ParticleType<TextParticleEffect> TEXT_PARTICLE = FabricParticleTypes.complex(TextParticleEffect.CODEC, TextParticleEffect.PACKET_CODEC);
 
     public static void register () {
         Registry.register(Registries.PARTICLE_TYPE, ProviHealthClient.identifier("text_particle"), TEXT_PARTICLE);

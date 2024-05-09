@@ -1,6 +1,6 @@
 package com.provismet.provihealth.config;
 
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalEntityTypeTags;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalEntityTypeTags;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -91,7 +91,6 @@ public class Options {
     public static boolean compatInHUD = false;
     public static HUDPortraitCompatMode HUDCompat = HUDPortraitCompatMode.STANDARD;
 
-    @SuppressWarnings("resource")
     public static boolean shouldRenderHealthFor (LivingEntity livingEntity) {
         if (blacklist.contains(EntityType.getId(livingEntity.getType()).toString())) return false;
         if (livingEntity.distanceTo(MinecraftClient.getInstance().player) > Options.maxRenderDistance) return false;
@@ -454,8 +453,6 @@ public class Options {
                 return false;
             
             case ALWAYS_SHOW:
-                return true;
-            
             default:
                 return true;
         }

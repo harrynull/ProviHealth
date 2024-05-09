@@ -20,20 +20,20 @@ To access the settings menu you will need:
 This mod can be used as a dependency via [Jitpack](https://jitpack.io/#Provismet/ProviHealth).
 
 Example entrypoint usage:  
-This entrypoint initialiser is what the mod uses to set its own values for the vanilla Entity Groups.
+This entrypoint initialiser is what the mod uses to set its own values for vanilla entity tags.
 ```java
 public class SelfApiHook implements ProviHealthApi {
     @Override
     public void onInitialize () {
-        this.registerIcon(EntityGroup.AQUATIC, Items.COD);
-        this.registerIcon(EntityGroup.ARTHROPOD, Items.COBWEB);
-        this.registerIcon(EntityGroup.ILLAGER, Items.IRON_AXE);
-        this.registerIcon(EntityGroup.UNDEAD, Items.ROTTEN_FLESH);
+        this.registerIcon(EntityTypeTags.AQUATIC, Items.COD, DEFAULT_PRIORITY + 1);
+        this.registerIcon(EntityTypeTags.ARTHROPOD, Items.COBWEB, DEFAULT_PRIORITY + 2);
+        this.registerIcon(EntityTypeTags.ILLAGER, Items.IRON_AXE, DEFAULT_PRIORITY);
+        this.registerIcon(EntityTypeTags.UNDEAD, Items.ROTTEN_FLESH, DEFAULT_PRIORITY + 3);
 
-        this.registerPortrait(EntityGroup.AQUATIC, ProviHealthClient.identifier("textures/gui/healthbars/aquatic.png"));
-        this.registerPortrait(EntityGroup.ARTHROPOD, ProviHealthClient.identifier("textures/gui/healthbars/arthropod.png"));
-        this.registerPortrait(EntityGroup.ILLAGER, ProviHealthClient.identifier("textures/gui/healthbars/illager.png"));
-        this.registerPortrait(EntityGroup.UNDEAD, ProviHealthClient.identifier("textures/gui/healthbars/undead.png"));
+        this.registerPortrait(EntityTypeTags.AQUATIC, ProviHealthClient.identifier("textures/gui/healthbars/aquatic.png"), DEFAULT_PRIORITY + 1);
+        this.registerPortrait(EntityTypeTags.ARTHROPOD, ProviHealthClient.identifier("textures/gui/healthbars/arthropod.png"), DEFAULT_PRIORITY + 2);
+        this.registerPortrait(EntityTypeTags.ILLAGER, ProviHealthClient.identifier("textures/gui/healthbars/illager.png"), DEFAULT_PRIORITY);
+        this.registerPortrait(EntityTypeTags.UNDEAD, ProviHealthClient.identifier("textures/gui/healthbars/undead.png"), DEFAULT_PRIORITY + 3);
     }
     
 }

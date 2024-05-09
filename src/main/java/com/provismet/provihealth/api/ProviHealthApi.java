@@ -1,11 +1,11 @@
 package com.provismet.provihealth.api;
 
+import net.minecraft.registry.tag.TagKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.provismet.provihealth.hud.BorderRegistry;
 
-import net.minecraft.entity.EntityGroup;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,12 +20,12 @@ public interface ProviHealthApi {
      * 
      * The icon takes the form of an item.
      * 
-     * @param entityGroup The entity group.
+     * @param tag The entity type tag.
      * @param item The item to serve as the icon.
-     * @return Whether or not the registry succeeded. This is false if the entity group already has an icon.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
-    public default boolean registerIcon (EntityGroup entityGroup, @NotNull Item item) {
-        return this.registerIcon(entityGroup, item, false);
+    public default boolean registerIcon (TagKey<EntityType<?>> tag, @NotNull Item item) {
+        return this.registerIcon(tag, item, 0);
     }
 
     /**
@@ -34,12 +34,12 @@ public interface ProviHealthApi {
      * 
      * The icon takes the form of an item.
      * 
-     * @param entityGroup The entity group.
+     * @param tag The entity type tag.
      * @param item The item to serve as the icon.
-     * @return Whether or not the registry succeeded. Expect this to be true when force = true.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
-    public default boolean registerIcon (EntityGroup entityGroup, @NotNull Item item, boolean force) {
-        return BorderRegistry.registerItem(entityGroup, item.getDefaultStack(), force);
+    public default boolean registerIcon (TagKey<EntityType<?>> tag, @NotNull Item item, int priority) {
+        return BorderRegistry.registerItem(tag, item.getDefaultStack(), priority);
     }
 
     /**
@@ -50,10 +50,10 @@ public interface ProviHealthApi {
      * 
      * @param type The entity type.
      * @param item The item that will act as the icon for this entity type.
-     * @return Whether or not the registry succeeded. This is false if the entity type already has an icon.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
     public default boolean registerIcon (EntityType<?> type, @NotNull Item item) {
-        return this.registerIcon(type, item, false);
+        return this.registerIcon(type, item, 0);
     }
 
     /**
@@ -64,11 +64,11 @@ public interface ProviHealthApi {
      * 
      * @param type The entity type.
      * @param item The item that will act as the icon for this entity type.
-     * @param force Whether or not this registration should override any pre-existing icon for the same entity type.
-     * @return Whether or not the registry succeeded. Expect this to be true when force = true.
+     * @param priority The priority level of this registration. Higher priority icons will override lower priority icons.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
-    public default boolean registerIcon (EntityType<?> type, @NotNull Item item, boolean force) {
-        return BorderRegistry.registerItem(type, item.getDefaultStack(), force);
+    public default boolean registerIcon (EntityType<?> type, @NotNull Item item, int priority) {
+        return BorderRegistry.registerItem(type, item.getDefaultStack(), priority);
     }
 
 
@@ -82,10 +82,10 @@ public interface ProviHealthApi {
      * 
      * @param type The entity type.
      * @param item The item stack that will act as the icon for this entity type.
-     * @return Whether or not the registry succeeded. This is false if the entity type already has an icon.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
     public default boolean registerIconStack (EntityType<?> type, @Nullable ItemStack item) {
-        return this.registerIconStack(type, item, false);
+        return this.registerIconStack(type, item, 0);
     }
 
     /**
@@ -98,11 +98,11 @@ public interface ProviHealthApi {
      * 
      * @param type The entity type.
      * @param item The item stack that will act as the icon for this entity type.
-     * @param force Whether or not this registration should override any pre-existing icon for the same entity type.
-     * @return Whether or not the registry succeeded. Expect this to be true when force = true.
+     * @param priority The priority level of this registration. Higher priority icons will override lower priority icons.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
-    public default boolean registerIconStack (EntityType<?> type, @Nullable ItemStack item, boolean force) {
-        return BorderRegistry.registerItem(type, item, force);
+    public default boolean registerIconStack (EntityType<?> type, @Nullable ItemStack item, int priority) {
+        return BorderRegistry.registerItem(type, item, priority);
     }
 
     /**
@@ -115,10 +115,10 @@ public interface ProviHealthApi {
      * 
      * @param type The entity group.
      * @param item The item stack that will act as the icon for this entity group.
-     * @return Whether or not the registry succeeded. This is false if the entity group already has an icon.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
-    public default boolean registerIconStack (EntityGroup type, @Nullable ItemStack item) {
-        return this.registerIconStack(type, item, false);
+    public default boolean registerIconStack (TagKey<EntityType<?>> type, @Nullable ItemStack item) {
+        return this.registerIconStack(type, item, 0);
     }
 
     /**
@@ -131,11 +131,28 @@ public interface ProviHealthApi {
      * 
      * @param type The entity group.
      * @param item The item stack that will act as the icon for this entity group.
-     * @param force Whether or not this registration should override any pre-existing icon for the same entity group.
-     * @return Whether or not the registry succeeded. Expect this to be true when force = true.
+     * @param priority The priority level of this registration. Higher priority icons will override lower priority icons.
+     * @return Whether or not the registry succeeded. This is false if a higher priority icon already exists.
      */
-    public default boolean registerIconStack (EntityGroup type, @Nullable ItemStack item, boolean force) {
-        return BorderRegistry.registerItem(type, item, force);
+    public default boolean registerIconStack (TagKey<EntityType<?>> type, @Nullable ItemStack item, int priority) {
+        return BorderRegistry.registerItem(type, item, priority);
+    }
+
+    /**
+     * Registers a portrait for an entity group. This will affect the HUD health bar.
+     * Only one portrait may be registered per entity group.
+     * 
+     * Setting resource = null means that the default portrait will be rendered.
+     * 
+     * If your mod introduces new entity groups, use this method to define a portrait for them.
+     * The image for the frame must be 96x48 in size. With the foreground (48x48) on the left and the background (48x48) on the right.
+     * 
+     * @param tag The entity group.
+     * @param resource A full resource path (modid:textures/gui/etc/file.png) to the texture.
+     * @return Whether or not the registry succeeded. This is false if a higher priority portrait already exists.
+     */
+    public default boolean registerPortrait (TagKey<EntityType<?>> tag, @Nullable Identifier resource) {
+        return this.registerPortrait(tag, resource, 0);
     }
 
     /**
@@ -149,28 +166,11 @@ public interface ProviHealthApi {
      * 
      * @param entityGroup The entity group.
      * @param resource A full resource path (modid:textures/gui/etc/file.png) to the texture.
-     * @return Whether or not the registry succeeded. This is false if the entity group already has a portrait.
+     * @param priority The priority level of this registration. Higher priority portraits will override lower priority portraits.
+     * @return Whether or not the registry succeeded. This is false if a higher priority portrait already exists.
      */
-    public default boolean registerPortrait (EntityGroup entityGroup, @Nullable Identifier resource) {
-        return this.registerPortrait(entityGroup, resource, false);
-    }
-
-    /**
-     * Registers a portrait for an entity group. This will affect the HUD health bar.
-     * Only one portrait may be registered per entity group.
-     * 
-     * Setting resource = null means that the default portrait will be rendered.
-     * 
-     * If your mod introduces new entity groups, use this method to define a portrait for them.
-     * The image for the frame must be 96x48 in size. With the foreground (48x48) on the left and the background (48x48) on the right.
-     * 
-     * @param entityGroup The entity group.
-     * @param resource A full resource path (modid:textures/gui/etc/file.png) to the texture.
-     * @param force Whether or not this registration should override any pre-existing portrait for the same entity group.
-     * @return Whether or not the registry succeeded. Expect this to be true when force = true.
-     */
-    public default boolean registerPortrait (EntityGroup entityGroup, @Nullable Identifier resource, boolean force) {
-        return BorderRegistry.registerBorder(entityGroup, resource, force);
+    public default boolean registerPortrait (TagKey<EntityType<?>> entityGroup, @Nullable Identifier resource, int priority) {
+        return BorderRegistry.registerBorder(entityGroup, resource, priority);
     }
 
     /**
@@ -185,10 +185,10 @@ public interface ProviHealthApi {
      * 
      * @param type The entity type.
      * @param resource A full resource path (modid:textures/gui/etc/file.png) to the texture.
-     * @return Whether or not the registry succeeded. This is false if the entity type already has a portrait.
+     * @return Whether or not the registry succeeded. This is false if a higher priority portrait already exists.
      */
     public default boolean registerPortrait (EntityType<?> type, @Nullable Identifier resource) {
-        return this.registerPortrait(type, resource, false);
+        return this.registerPortrait(type, resource, 0);
     }
 
     /**
@@ -203,10 +203,10 @@ public interface ProviHealthApi {
      * 
      * @param type The entity type.
      * @param resource A full resource path (modid:textures/gui/etc/file.png) to the texture.
-     * @param force Whether or not this registration should override any pre-existing portrait for the same entity type.
-     * @return Whether or not the registry succeeded. Expect this to be true when force = true.
+     * @param priority The priority level of this registration. Higher priority portraits will override lower priority portraits.
+     * @return Whether or not the registry succeeded. This is false if a higher priority portrait already exists.
      */
-    public default boolean registerPortrait (EntityType<?> type, @Nullable Identifier resource, boolean force) {
-        return BorderRegistry.registerBorder(type, resource, force);
+    public default boolean registerPortrait (EntityType<?> type, @Nullable Identifier resource, int priority) {
+        return BorderRegistry.registerBorder(type, resource, priority);
     }
 }

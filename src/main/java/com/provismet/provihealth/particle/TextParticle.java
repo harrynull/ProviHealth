@@ -115,8 +115,6 @@ public class TextParticle extends SpriteBillboardParticle {
 
         // I stack-traced buildGeometry, this block replicates the MatrixStack and then moves the text to the right place.
         MatrixStack matrices = new MatrixStack();
-        //matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch()));
-        //matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(camera.getYaw() + 180.0f));
         matrices.translate(dX, dY, dZ);
         matrices.multiply(quaternionf);
 

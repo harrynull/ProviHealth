@@ -5,21 +5,15 @@ import com.provismet.provihealth.config.Options;
 import com.provismet.provihealth.config.Options.DamageParticleType;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleFactory;
 import net.minecraft.client.particle.ParticleTextureSheet;
 import net.minecraft.client.particle.SpriteBillboardParticle;
 import net.minecraft.client.particle.SpriteProvider;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Quaternionf;
 
 public class TextParticle extends SpriteBillboardParticle {
     private final String text;
@@ -33,9 +27,9 @@ public class TextParticle extends SpriteBillboardParticle {
     protected TextParticle (ClientWorld clientWorld, double x, double y, double z, TextParticleEffect particleEffect) {
         super(clientWorld, x, y, z);
 
-        this.red = particleEffect.getColour().x();
-        this.green = particleEffect.getColour().y();
-        this.blue = particleEffect.getColour().z();
+        this.red = particleEffect.getColour().getX();
+        this.green = particleEffect.getColour().getY();
+        this.blue = particleEffect.getColour().getZ();
         this.scale = 0f;
         this.prevScale = 0f;
         this.alpha = particleEffect.alpha;
@@ -55,7 +49,7 @@ public class TextParticle extends SpriteBillboardParticle {
                 this.velocityX = 0;
                 this.velocityY = 0.1;
                 this.velocityZ = 0;
-                this.velocityMultiplier = 0.85f;       
+                this.velocityMultiplier = 0.85f;
                 break;
 
             case GRAVITY:
@@ -72,7 +66,7 @@ public class TextParticle extends SpriteBillboardParticle {
                 this.velocityY = 0;
                 this.velocityZ = 0;
                 break;
-        
+
             default:
                 break;
         }
@@ -83,13 +77,13 @@ public class TextParticle extends SpriteBillboardParticle {
     }
 
     @Override
-	public void tick () {
+    public void tick () {
         super.tick();
         this.prevScale = this.scale;
 
         if (this.age > this.maxAge / 2) this.scale -= this.maxScale / (this.maxAge / 2f);
         else if (this.scale < this.maxScale) this.scale += this.maxScale / 5f;
-        
+
         this.prevAngle = this.angle;
         this.angle += this.rotationSpeed;
 
@@ -101,27 +95,6 @@ public class TextParticle extends SpriteBillboardParticle {
             }
             else this.velocityY -= 0.025;
         }
-	}
-
-    @Override
-    public void buildGeometry (VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
-        super.buildGeometry(vertexConsumer, camera, tickDelta);
-
-        Quaternionf quaternionf = camera.getRotation();
-        Vec3d cameraPos = camera.getPos();
-        float dX = (float)(MathHelper.lerp((double)tickDelta, this.prevPosX, this.x) - cameraPos.getX());
-        float dY = (float)(MathHelper.lerp((double)tickDelta, this.prevPosY, this.y) - cameraPos.getY());
-        float dZ = (float)(MathHelper.lerp((double)tickDelta, this.prevPosZ, this.z) - cameraPos.getZ());
-
-        // I stack-traced buildGeometry, this block replicates the MatrixStack and then moves the text to the right place.
-        MatrixStack matrices = new MatrixStack();
-        matrices.translate(dX, dY, dZ);
-        matrices.multiply(quaternionf);
-
-        float scaleSize = this.getSize(tickDelta) / 6f;
-        matrices.scale(-scaleSize, -scaleSize, -scaleSize);
-
-        MinecraftClient.getInstance().textRenderer.draw(this.text, 0f, 0f, this.textColour, Options.particleTextShadow, matrices.peek().getPositionMatrix(), MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers(), TextRenderer.TextLayerType.POLYGON_OFFSET, 0, this.getBrightness(tickDelta));
     }
 
     @Override
@@ -129,7 +102,7 @@ public class TextParticle extends SpriteBillboardParticle {
         return ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT;
     }
 
-   @Override
+    @Override
     public int getBrightness (float tint) {
         return LightmapTextureManager.pack(15, 15);
     }
@@ -168,6 +141,6 @@ public class TextParticle extends SpriteBillboardParticle {
             textParticle.setSprite(this.spriteProvider);
             return textParticle;
         }
-    
+
     }
 }

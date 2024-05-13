@@ -20,7 +20,7 @@ import net.minecraft.text.Text;
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin {
     @Inject(method="renderLabelIfPresent", at=@At("HEAD"), cancellable=true)
-    private void cancelLabel (Entity entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float tickDelta, CallbackInfo info) {
+    private void cancelLabel (Entity entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo info) {
         if (TargetHealthBar.disabledLabels || (Options.overrideLabels && entity instanceof LivingEntity living && Options.shouldRenderHealthFor(living))) info.cancel();
     }
 

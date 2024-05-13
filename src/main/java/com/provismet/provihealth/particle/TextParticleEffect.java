@@ -1,16 +1,7 @@
 package com.provismet.provihealth.particle;
 
-import com.mojang.datafixers.kinds.Applicative;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.util.dynamic.Codecs;
-import org.joml.Vector3f;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.registry.Registry;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -19,51 +10,16 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.AbstractDustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
-import net.minecraft.registry.Registries;
 
 public class TextParticleEffect implements ParticleEffect {
-    protected final static Codec<String> TEXT_CODEC = Codec.string(1, 8).validate(text -> {
-        try {
-            Integer.valueOf(text);
-            return DataResult.success(text);
-        }
-        catch (Exception e) {
-            return DataResult.error(() -> "Text must be an integer: " + text);
-        }
-    });
+    private final Vec3f colour;
 
-    private final Vector3f colour;
-    
     public final float alpha;
     public final float scale;
     public final String text;
     public final int textColour;
 
-    public static final MapCodec<TextParticleEffect> CODEC = RecordCodecBuilder.mapCodec(instance ->
-        instance.group(
-            Codecs.VECTOR_3F.fieldOf("colour").forGetter(effect -> effect.colour),
-            Codecs.POSITIVE_FLOAT.fieldOf("alpha").forGetter(effect -> effect.alpha),
-            Codecs.POSITIVE_FLOAT.fieldOf("scale").forGetter(effect -> effect.scale),
-            Codecs.rangedInt(0, 0xFFFFFF).fieldOf("text_colour").forGetter(effect -> effect.textColour),
-            TEXT_CODEC.fieldOf("text").forGetter(effect -> effect.text))
-                .apply(instance, TextParticleEffect::new)
-    );
-
-    public static final PacketCodec<RegistryByteBuf, TextParticleEffect> PACKET_CODEC = PacketCodec.tuple(
-        PacketCodecs.VECTOR3F,
-        effect -> effect.colour,
-        PacketCodecs.FLOAT,
-        effect -> effect.alpha,
-        PacketCodecs.FLOAT,
-        effect -> effect.scale,
-        PacketCodecs.INTEGER,
-        effect -> effect.textColour,
-        PacketCodecs.string(8),
-        effect -> effect.text,
-        TextParticleEffect::new
-    );
-
-    public TextParticleEffect (Vector3f colour, float alpha, float scale, int textColour, String text) {
+    public TextParticleEffect (Vec3f colour, float alpha, float scale, int textColour, String text) {
         this.colour = colour;
         this.alpha = alpha;
         this.scale = scale;
@@ -71,12 +27,59 @@ public class TextParticleEffect implements ParticleEffect {
         this.textColour = textColour;
     }
 
+    @SuppressWarnings("deprecation")
+    public static final ParticleEffect.Factory<TextParticleEffect> PARAMETERS_FACTORY = new ParticleEffect.Factory<TextParticleEffect>() {
+        @Override
+        public TextParticleEffect read (ParticleType<TextParticleEffect> particleType, StringReader stringReader) throws CommandSyntaxException {
+            Vec3f colour = AbstractDustParticleEffect.readColor(stringReader);
+            stringReader.expect(' ');
+            float alpha = stringReader.readFloat();
+            stringReader.expect(' ');
+            float scale = stringReader.readFloat();
+            stringReader.expect(' ');
+            int textColour = stringReader.readInt();
+            stringReader.expect(' ');
+            String text = stringReader.getRemaining();
+            return new TextParticleEffect(colour, alpha, scale, textColour, text);
+        }
+
+        @Override
+        public TextParticleEffect read (ParticleType<TextParticleEffect> type, PacketByteBuf buffer) {
+            return new TextParticleEffect(AbstractDustParticleEffect.readColor(buffer), buffer.readFloat(), buffer.readFloat(), buffer.readInt(), buffer.readString());
+        }
+    };
+
+    @Override
+    public String asString () {
+        return String.format("%s %.2f %.2f %.2f %.2f %.2f %d %s",
+                Registry.PARTICLE_TYPE.getId(this.getType()),
+                this.colour.getX(),
+                this.colour.getY(),
+                this.colour.getZ(),
+                this.alpha,
+                this.scale,
+                this.textColour,
+                this.text
+        );
+    }
+
     @Override
     public ParticleType<TextParticleEffect> getType() {
         return Particles.TEXT_PARTICLE;
     }
-    
-    public Vector3f getColour () {
+
+    @Override
+    public void write (PacketByteBuf buffer) {
+        buffer.writeFloat(this.colour.getX());
+        buffer.writeFloat(this.colour.getY());
+        buffer.writeFloat(this.colour.getZ());
+        buffer.writeFloat(this.alpha);
+        buffer.writeFloat(this.scale);
+        buffer.writeInt(this.textColour);
+        buffer.writeString(this.text);
+    }
+
+    public Vec3f getColour () {
         return this.colour;
     }
 }
